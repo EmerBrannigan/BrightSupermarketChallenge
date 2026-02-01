@@ -57,4 +57,13 @@ public class CheckoutTests
         checkout.Scan("A");
         checkout.GetTotalPrice().Should().Be(130);
     }
+
+    [Fact]
+    public void GetTotalPrice_AppliesMultiPricing_B()
+    {
+        var checkout = new Checkout(CreateStandardPricingRules());
+        checkout.Scan("B");
+        checkout.Scan("B");
+        checkout.GetTotalPrice().Should().Be(45);
+    }
 }
