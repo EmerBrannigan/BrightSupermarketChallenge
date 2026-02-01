@@ -40,4 +40,11 @@ public class CheckoutTests
         // Act & Assert
         Assert.Throws<InvalidOperationException>(() => checkout.Scan("Z"));
     }
+
+    [Fact]
+    public void GetTotalPrice_EmptyBasket_ReturnsZero()
+    {
+        var checkout = new Checkout(CreateStandardPricingRules());
+        checkout.GetTotalPrice().Should().Be(0);
+    }
 }
