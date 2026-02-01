@@ -1,6 +1,7 @@
 ﻿using System;
 using Checkout;
 using System.Collections.Generic;
+using System.Linq;
 
 class Program
 {
@@ -14,10 +15,40 @@ class Program
             new UnitPricingRule("D", 15)
         };
 
-        var checkout = new Checkout.Checkout(pricingRules);
-        var items = new[] { "A", "B", "C", "D", "A", "B", "A" };
-        foreach (var item in items) checkout.Scan(item);
+        Console.WriteLine("Enter items as comma-separated SKUs (e.g. A,B,C). Enter 'q' or an empty line to exit.");
 
-        Console.WriteLine($"Total: {checkout.GetTotalPrice()}"); // Expected: 210
+        while (true)
+        {
+            Console.Write("\nItems: ");
+            var line = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(line) || line.Trim().Equals("q", StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine("Exiting.");
+                break;
+            }
+
+            var items = line.Split(new[] { ',', ' ', ';' }, StringSplitOptions.RemoveEmptyEntries)
+                            .Select(s => s.Trim().ToUpperInvariant())
+                            .ToArray();
+
+            var checkout = new Checkout.Checkout(pricingRules);
+            var unknown = new List<string>();
+
+            foreach (var item in items)
+            {
+                try
+                {
+                    checkout.Scan(item);
+                }
+                catch (InvalidOperationException)
+                {
+                    unknown.Add(item);
+                }
+            }
+
+            if (unknown.Any()) Console.WriteLine($"Warning: unknown SKUs ignored: {string.Join(", ", unknown)}");
+
+            Console.WriteLine($"Total: {checkout.GetTotalPrice()}");
+        }
     }
 }
