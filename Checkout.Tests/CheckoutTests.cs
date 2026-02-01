@@ -66,4 +66,15 @@ public class CheckoutTests
         checkout.Scan("B");
         checkout.GetTotalPrice().Should().Be(45);
     }
+
+    [Fact]
+    public void GetTotalPrice_MixedBasket_ReturnsExpectedTotal()
+    {
+        var checkout = new Checkout(CreateStandardPricingRules());
+        var items = new[] { "A", "B", "C", "D", "A", "B", "A" };
+        foreach (var i in items) checkout.Scan(i);
+        // A x3 => 130, B x2 => 45, C => 20, D => 15 => total 210
+        checkout.GetTotalPrice().Should().Be(210);
+    }
+
 }
