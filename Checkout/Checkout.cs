@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Checkout;
 
 public class Checkout : ICheckout
 {
-    private readonly Dictionary<string, PricingRule> _pricingRules;
+    private readonly Dictionary<string, IPricingRule> _pricingRules;
     private readonly Dictionary<string, int> _scannedItems;
 
-    public Checkout(IEnumerable<PricingRule> pricingRules)
+    public Checkout(IEnumerable<IPricingRule> pricingRules)
     {
-        _pricingRules = pricingRules.ToDictionary(r => r.Sku,
-            r => new PricingRule(r.Sku, r.UnitPrice, r.Quantity, r.SpecialPrice));
+        if (pricingRules == null) throw new ArgumentNullException(nameof(pricingRules));
+        _pricingRules = pricingRules.ToDictionary(r => r.Sku);
         _scannedItems = new Dictionary<string, int>();
     }
     public void Scan(string item)
@@ -46,16 +47,7 @@ public class Checkout : ICheckout
                 continue;
             }
 
-            if (rule.Quantity.HasValue && rule.SpecialPrice.HasValue && rule.Quantity.Value > 0)
-            {
-                var groups = count / rule.Quantity.Value;
-                var remainder = count % rule.Quantity.Value;
-                total += groups * rule.SpecialPrice.Value + remainder * rule.UnitPrice;
-            }
-            else
-            {
-                total += count * rule.UnitPrice;
-            }
+            total += rule.CalculatePrice(count);
         }
 
         return total;
