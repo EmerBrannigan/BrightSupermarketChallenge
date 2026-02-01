@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Checkout;
 
@@ -15,6 +16,9 @@ public class Checkout : ICheckout
     }
     public void Scan(string item)
     {
+        if (!_pricingRules.ContainsKey(item))
+            throw new InvalidOperationException($"Unknown SKU: {item}");
+
         if (_scannedItems.ContainsKey(item))
         {
             _scannedItems[item]++;

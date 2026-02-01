@@ -30,4 +30,14 @@ public class CheckoutTests
         // Assert
         checkout.GetItemCount("A").Should().Be(1);
     }
+
+    [Fact]
+    public void Scan_UnknownItem_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var checkout = new Checkout(CreateStandardPricingRules());
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => checkout.Scan("Z"));
+    }
 }
