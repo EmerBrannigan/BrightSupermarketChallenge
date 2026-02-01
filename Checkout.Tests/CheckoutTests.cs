@@ -77,4 +77,15 @@ public class CheckoutTests
         checkout.GetTotalPrice().Should().Be(210);
     }
 
+    [Fact]
+    public void GetTotalPrice_RemainderItems_PaidAtUnitPrice()
+    {
+        var checkout = new Checkout(CreateStandardPricingRules());
+        // 4 * A => 3-for-130 + 1*50 = 180
+        checkout.Scan("A");
+        checkout.Scan("A");
+        checkout.Scan("A");
+        checkout.Scan("A");
+        checkout.GetTotalPrice().Should().Be(180);
+    }
 }
