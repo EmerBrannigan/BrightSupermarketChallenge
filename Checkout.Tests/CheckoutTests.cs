@@ -88,4 +88,18 @@ public class CheckoutTests
         checkout.Scan("A");
         checkout.GetTotalPrice().Should().Be(180);
     }
+
+    [Fact]
+    public void GetTotalPrice_SixAs_AppliesTwoMultiPriceOffers_Returns260()
+    {
+        var checkout = new Checkout(CreateStandardPricingRules());
+        // 6 A's = 2 * (3-for-130) = 260
+        checkout.Scan("A");
+        checkout.Scan("A");
+        checkout.Scan("A");
+        checkout.Scan("A");
+        checkout.Scan("A");
+        checkout.Scan("A");
+        checkout.GetTotalPrice().Should().Be(260);
+    }
 }
