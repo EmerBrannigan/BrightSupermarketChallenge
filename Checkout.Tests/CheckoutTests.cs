@@ -6,14 +6,14 @@ namespace Checkout.Tests;
 
 public class CheckoutTests
 {
-    private IEnumerable<PricingRule> CreateStandardPricingRules()
+    private IEnumerable<IPricingRule> CreateStandardPricingRules()
     {
-        return new List<PricingRule>
+        return new List<IPricingRule>
         {
-            new PricingRule("A", 50, 3, 130),
-            new PricingRule("B", 30, 2, 45),
-            new PricingRule("C", 20),
-            new PricingRule("D", 15)
+            new MultiPricingRule("A", 50, 3, 130),
+            new MultiPricingRule("B", 30, 2, 45),
+            new UnitPricingRule("C", 20),
+            new UnitPricingRule("D", 15)
         };
     }
 
@@ -77,29 +77,22 @@ public class CheckoutTests
         checkout.GetTotalPrice().Should().Be(210);
     }
 
-    [Fact]
-    public void GetTotalPrice_RemainderItems_PaidAtUnitPrice()
+    [Theory]
+    [InlineData("", 0)]
+    [InlineData("A", 50)]
+    [InlineData("A,A,A", 130)]
+    [InlineData("B,B", 45)]
+    [InlineData("A,A,A,A", 180)]
+    [InlineData("A,A,A,A,A,A", 260)]
+    [InlineData("A,B,C", 100)]
+    public void GetTotalPrice_VariousBaskets_ReturnsExpectedTotal(string itemsCsv, int expected)
     {
         var checkout = new Checkout(CreateStandardPricingRules());
-        // 4 * A => 3-for-130 + 1*50 = 180
-        checkout.Scan("A");
-        checkout.Scan("A");
-        checkout.Scan("A");
-        checkout.Scan("A");
-        checkout.GetTotalPrice().Should().Be(180);
-    }
+        if (!string.IsNullOrEmpty(itemsCsv))
+        {
+            foreach (var s in itemsCsv.Split(',')) checkout.Scan(s);
+        }
 
-    [Fact]
-    public void GetTotalPrice_SixAs_AppliesTwoMultiPriceOffers_Returns260()
-    {
-        var checkout = new Checkout(CreateStandardPricingRules());
-        // 6 A's = 2 * (3-for-130) = 260
-        checkout.Scan("A");
-        checkout.Scan("A");
-        checkout.Scan("A");
-        checkout.Scan("A");
-        checkout.Scan("A");
-        checkout.Scan("A");
-        checkout.GetTotalPrice().Should().Be(260);
+        checkout.GetTotalPrice().Should().Be(expected);
     }
 }
